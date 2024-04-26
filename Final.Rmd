@@ -1,0 +1,579 @@
+---
+title: "Final"
+author: "Miffy"
+date: "2024-04-22"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(kableExtra)
+library(tidyverse) # loads dplyr, ggplot2, and others
+library(readr) # more informative and easy way to import data
+library(stringr) # to handle text elements
+library(tidytext) # includes set of functions useful for manipulating text
+library(quanteda) # includes functions to implement Lexicoder
+library(textdata)
+```
+```{r}
+getwd()
+```
+```{r}
+library("ggplot2")
+
+library("gdata")
+library("stringr")
+library("data.table")
+
+## Prep Osnabrugge et al. 
+
+setwd("C:/Users/22478/Desktop/文本分析期末资料/期末")
+data <- fread("uk_data.csv", encoding="UTF-8")
+
+
+data$date = as.Date(data$date)
+
+
+#Table 2: Examples: Emotive and neutral speeches
+example1 = subset(data, id_speech==854597)
+example1$emotive_rhetoric
+example1$text
+
+example2 = subset(data, id_speech==778143)
+example2$emotive_rhetoric
+example2$text
+
+#Create time variable
+data$time= NA
+data$time[data$date>=as.Date("2001-01-01") & data$date<=as.Date("2001-06-30")] = "01/1"
+data$time[data$date>=as.Date("2001-07-01") & data$date<=as.Date("2001-12-31")] = "01/2"
+data$time[data$date>=as.Date("2002-01-01") & data$date<=as.Date("2002-06-30")] = "02/1"
+data$time[data$date>=as.Date("2002-07-01") & data$date<=as.Date("2002-12-31")] = "02/2"
+data$time[data$date>=as.Date("2003-01-01") & data$date<=as.Date("2003-06-30")] = "03/1"
+data$time[data$date>=as.Date("2003-07-01") & data$date<=as.Date("2003-12-31")] = "03/2"
+data$time[data$date>=as.Date("2004-01-01") & data$date<=as.Date("2004-06-30")] = "04/1"
+data$time[data$date>=as.Date("2004-07-01") & data$date<=as.Date("2004-12-31")] = "04/2"
+data$time[data$date>=as.Date("2005-01-01") & data$date<=as.Date("2005-06-30")] = "05/1"
+data$time[data$date>=as.Date("2005-07-01") & data$date<=as.Date("2005-12-31")] = "05/2"
+data$time[data$date>=as.Date("2006-01-01") & data$date<=as.Date("2006-06-30")] = "06/1"
+data$time[data$date>=as.Date("2006-07-01") & data$date<=as.Date("2006-12-31")] = "06/2"
+data$time[data$date>=as.Date("2007-01-01") & data$date<=as.Date("2007-06-30")] = "07/1"
+data$time[data$date>=as.Date("2007-07-01") & data$date<=as.Date("2007-12-31")] = "07/2"
+data$time[data$date>=as.Date("2008-01-01") & data$date<=as.Date("2008-06-30")] = "08/1"
+data$time[data$date>=as.Date("2008-07-01") & data$date<=as.Date("2008-12-31")] = "08/2"
+data$time[data$date>=as.Date("2009-01-01") & data$date<=as.Date("2009-06-30")] = "09/1"
+data$time[data$date>=as.Date("2009-07-01") & data$date<=as.Date("2009-12-31")] = "09/2"
+data$time[data$date>=as.Date("2010-01-01") & data$date<=as.Date("2010-06-30")] = "10/1"
+data$time[data$date>=as.Date("2010-07-01") & data$date<=as.Date("2010-12-31")] = "10/2"
+data$time[data$date>=as.Date("2011-01-01") & data$date<=as.Date("2011-06-30")] = "11/1"
+data$time[data$date>=as.Date("2011-07-01") & data$date<=as.Date("2011-12-31")] = "11/2"
+data$time[data$date>=as.Date("2012-01-01") & data$date<=as.Date("2012-06-30")] = "12/1"
+data$time[data$date>=as.Date("2012-07-01") & data$date<=as.Date("2012-12-31")] = "12/2"
+data$time[data$date>=as.Date("2013-01-01") & data$date<=as.Date("2013-06-30")] = "13/1"
+data$time[data$date>=as.Date("2013-07-01") & data$date<=as.Date("2013-12-31")] = "13/2"
+data$time[data$date>=as.Date("2014-01-01") & data$date<=as.Date("2014-06-30")] = "14/1"
+data$time[data$date>=as.Date("2014-07-01") & data$date<=as.Date("2014-12-31")] = "14/2"
+data$time[data$date>=as.Date("2015-01-01") & data$date<=as.Date("2015-06-30")] = "15/1"
+data$time[data$date>=as.Date("2015-07-01") & data$date<=as.Date("2015-12-31")] = "15/2"
+data$time[data$date>=as.Date("2016-01-01") & data$date<=as.Date("2016-06-30")] = "16/1"
+data$time[data$date>=as.Date("2016-07-01") & data$date<=as.Date("2016-12-31")] = "16/2"
+data$time[data$date>=as.Date("2017-01-01") & data$date<=as.Date("2017-06-30")] = "17/1"
+data$time[data$date>=as.Date("2017-07-01") & data$date<=as.Date("2017-12-31")] = "17/2"
+data$time[data$date>=as.Date("2018-01-01") & data$date<=as.Date("2018-06-30")] = "18/1"
+data$time[data$date>=as.Date("2018-07-01") & data$date<=as.Date("2018-12-31")] = "18/2"
+data$time[data$date>=as.Date("2019-01-01") & data$date<=as.Date("2019-06-30")] = "19/1"
+data$time[data$date>=as.Date("2019-07-01") & data$date<=as.Date("2019-12-31")] = "19/2"
+
+data$time2 = data$time
+data$time2 = str_replace(data$time2, "/", "_")
+
+data$stage = 0
+data$stage[data$m_questions==1]= 1
+data$stage[data$u_questions==1]= 2
+data$stage[data$queen_debate_others==1]= 3
+data$stage[data$queen_debate_day1==1]= 4
+data$stage[data$pm_questions==1]= 5
+```
+```{r}
+data <- data %>%
+  sample_n(10000)
+```
+
+
+```{r}
+head(data)
+colnames(data)
+```
+```{r}
+
+library(dplyr)
+
+data <- data %>%
+  select(id_speech, date, female, age,
+         party, text, top_topic) %>%
+  dplyr::rename(id = id_speech,
+         topic = top_topic)
+```
+
+
+```{r}
+data %>% 
+  arrange(date) %>%
+  tail(5) %>%
+  kbl() %>%
+  kable_styling(c("striped", "hover", "condensed", "responsive"))
+```
+#Tidy
+```{r}
+tidy_data <- data%>% 
+  mutate(desc = tolower(text)) %>%
+  unnest_tokens(word, desc) %>%
+  filter(str_detect(word, "[a-z]"))
+```
+Text divided into single small type word, put every word in a new line named "word".
+
+Then, removing stop words.
+```{r}
+tidy_data <- tidy_data %>%
+    filter(!word %in% stop_words$word)
+```
+
+#See 3 different dictionary
+```{r}
+get_sentiments("afinn")
+```
+```{r}
+get_sentiments("bing")
+```
+```{r}
+get_sentiments("nrc")
+```
+#About trust sentiment in nrc dictionary
+I assume that as time gets closer, the trust-related words will increase.
+```{r}
+nrc_trust <- get_sentiments("nrc") %>% 
+  filter(sentiment == "trust")
+
+tidy_data %>%
+  inner_join(nrc_trust) %>%
+  dplyr::count(word, sort = TRUE)
+```
+# Sentiment trends over time
+```{r}
+tidy_data$time <- as.Date(tidy_data$date)
+
+tidy_data <- tidy_data%>%
+  arrange(time)
+
+tidy_data$order <- 1:nrow(tidy_data)
+```
+change date into a new line called "time", which can read by R.
+Then creat a new line called "order"
+
+# Calculate a net sentiment score
+```{r}
+#get speech sentiment by time
+data_nrc_sentiment <- tidy_data %>%
+  inner_join(get_sentiments("nrc")) %>%
+  dplyr::count(time, index = order%/%1000, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+data_nrc_sentiment %>%
+  ggplot(aes(time, sentiment)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method= loess, alpha=0.25)+ ylab("nrc sentiment")
+
+data_nrc_sentiment <- tidy_data %>%
+  inner_join(get_sentiments("bing")) %>%
+  dplyr::count(time, index = order%/%1000, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+data_nrc_sentiment %>%
+  ggplot(aes(time, sentiment)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method= loess, alpha=0.25)+ ylab("bing sentiment")
+
+
+```
+## Domain-specific lexicons--trust
+```{r}
+word <- c('trust','truth',"true","real","authority","confidence","faith","friend","hope","united","statement","agreement","credit","share","agreed")
+value <- c(1, 1, 1, 1, 1, 1, 1,1,1,1,1,1,1,1,1)
+trust_word <- data.frame(word, value)
+trust_word
+```
+```{r}
+tidy_data %>%
+  inner_join(trust_word) %>%
+  group_by(time, index = order) %>% 
+  summarise(morwords = sum(value)) %>% 
+  ggplot(aes(time, morwords)) +
+  geom_bar(stat= "identity") +
+  ylab("trust words")
+```
+
+```{r}
+trust_word <- c('trust','truth',"true","real","authority","confidence","faith","friend","hope","united","statement","agreement","credit","share","agreed")
+
+
+#get total speech per day (no missing dates so no date completion required)
+totals <- tidy_data %>%
+  mutate(obs=1) %>%
+  group_by(time) %>%
+  summarise(sum_words = sum(obs))
+
+#plot
+tidy_data %>%
+  mutate(obs=1) %>%
+  filter(grepl(paste0(trust_word, collapse = "|"),word, ignore.case = T)) %>%
+  group_by(time) %>%
+  summarise(sum_mwords = sum(obs)) %>%
+  full_join(totals, word, by="time") %>%
+  mutate(sum_mwords= ifelse(is.na(sum_mwords), 0, sum_mwords),
+         pctmwords = sum_mwords/sum_words) %>%
+  ggplot(aes(time, pctmwords)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method= loess, alpha=0.25) +
+  xlab("Date") + ylab("% trust words")
+```
+```{r}
+data$time <- as.Date(data$date)
+data_corpus <- corpus(data, text_field = "text", docvars = "time")
+```
+```{r}
+toks_speech <- tokens(data_corpus, remove_punct = TRUE)
+```
+```{r}
+# select only the "negative" and "positive" categories
+data_dictionary_LSD2015_pos_neg <- data_dictionary_LSD2015[1:2]
+toks_speech_lsd <- tokens_lookup(toks_speech, dictionary = data_dictionary_LSD2015_pos_neg)
+```
+
+```{r}
+# create a document document-feature matrix and group it by date
+dfmat_speech_lsd <- dfm(toks_speech_lsd) %>% 
+  dfm_group(groups = time)
+
+# plot positive and negative valence over time
+matplot(dfmat_speech_lsd$time, dfmat_speech_lsd, type = "l", lty = 1, col = 1:2,
+        ylab = "Frequency", xlab = "")
+grid()
+legend("topleft", col = 1:2, legend = colnames(dfmat_speech_lsd), lty = 1, bg = "white")
+
+# plot overall sentiment (positive  - negative) over time
+
+plot(dfmat_speech_lsd$time, dfmat_speech_lsd[,"positive"] - dfmat_speech_lsd[,"negative"], 
+     type = "l", ylab = "Sentiment", xlab = "")
+  
+grid()
+abline(h = 0, lty = 2)
+```
+```{r}
+# 确定 time 列中的年份范围
+year_range <- range(format(as.Date(dfmat_speech_lsd$time), "%Y"))
+years <- seq(from = as.numeric(year_range[1]), to = as.numeric(year_range[2]))
+
+# 绘制正面和负面情感的时间序列
+matplot(dfmat_speech_lsd$time, dfmat_speech_lsd, type = "l", lty = 1, col = 1:2,
+        ylab = "Frequency", xlab = "Year", xaxt = "n")  # 移除默认的 x 轴标签
+axis(1, at = as.Date(paste0(years, "-01-01")), labels = years)
+grid()
+legend("topleft", col = 1:2, legend = colnames(dfmat_speech_lsd), lty = 1, bg = "white")
+
+# 绘制总体情感 (positive - negative) 的时间序列
+plot(dfmat_speech_lsd$time, dfmat_speech_lsd[,"positive"] - dfmat_speech_lsd[,"negative"], 
+     type = "l", ylab = "Sentiment", xlab = "Year", xaxt = "n")
+axis(1, at = as.Date(paste0(years, "-01-01")), labels = years)
+grid()
+abline(h = 0, lty = 2)
+
+
+```
+#Look at different party
+```{r}
+# to subset means to take only a sample according to a specific condition. Here I'm going to look only at tabloid media. 
+speech_tabloid <- data %>%
+  filter(party %in% c("Labour", "Conservative", "Liberal Democrats", "Scottish National Party","Plaud Cymru","Democratic Unionist Party","Ulster Unionist Party"))
+
+# create corpus
+speech_tabloid_corpus <- corpus(speech_tabloid, text_field = "text")
+
+# check that all docvars have been correctly recognised
+names(docvars(speech_tabloid_corpus)) 
+
+# tokenising and tidying
+toks_tabloid <- tokens(speech_tabloid_corpus, 
+                       remove_punct = TRUE, # remove punctuation
+                       remove_url = TRUE, # remove urls
+                       remove_numbers = TRUE, # remove numbers
+                       remove_symbols = TRUE) %>% # remove symbols
+  tokens_select(pattern = stopwords("en"), selection = "remove") %>% # remove stopwords
+  tokens_tolower()
+```
+
+```{r}
+library(quanteda)
+
+# 检查预处理后的令牌是否存在
+if (any(lengths(toks_tabloid) == 0)) {
+  warning("Some tokenized documents are empty after preprocessing.")
+}
+
+# 创建DFM并检查每个政党的文档数
+dfm_tabloid <- dfm(toks_tabloid)
+cat("Document count by party before grouping:\n")
+print(table(docvars(toks_tabloid, "party")))
+
+# 按政党分组
+dfm_grouped <- dfm_group(dfm_tabloid, groups = docvars(dfm_tabloid, "party"))
+
+# 计算每个政党的总令牌数
+total_tokens_per_party <- rowSums(dfm_grouped)
+party_names <- docvars(dfm_grouped, "party")
+
+# 结果整理为数据框
+total_tokens_df <- data.frame(party = party_names, total_tokens = total_tokens_per_party)
+
+# 查看结果
+print(total_tokens_df)
+```
+```{r}
+data_dictionary_NRC <- get_sentiments("nrc")
+data_dictionary_NRC <- as.dictionary(data_dictionary_NRC)
+toks_tabloid_nrc <- toks_tabloid %>%
+  tokens_lookup(dictionary = data_dictionary_NRC)
+
+# turn into document feature matrix (dfm)
+dfm_tabloid_nrc <- dfm(toks_tabloid_nrc) %>% 
+  dfm_group(groups = docvars(toks_tabloid_nrc, "party")) %>%
+  convert(to = "data.frame") # convert to data frame
+
+print(dfm_tabloid_nrc)
+
+```
+```{r}
+dfm_tabloid_nrc <- dfm_tabloid_nrc %>%
+  rename(party = doc_id)
+
+dfm_tabloid_nrc$total <- rowSums(dfm_tabloid_nrc[, -1], na.rm = TRUE)
+
+print(dfm_tabloid_nrc)
+```
+
+
+```{r}
+dfm_tabloid_nrc_pct <- dfm_tabloid_nrc %>%
+  mutate(across(c("anger":"trust"), ~round((.x/total)*100, digits=1)))
+
+dfm_tabloid_nrc_pct <- dfm_tabloid_nrc_pct %>%
+  select(-total) %>% # remove the 'total' column
+  pivot_longer(c(anger:trust), names_to = "sentiment", values_to = "frequency")
+```
+
+```{r}
+dfm_tabloid_nrc_pct %>%
+  ggplot() + 
+  geom_col(aes(x=party, y=frequency, group=sentiment, fill=party)) +
+  coord_flip() + # pivot plot by 90 degrees
+  facet_wrap(~sentiment, nrow = 2) + # create multiple plots for each
+  ylab("Sentiment relative frequency") + # label y axis
+  scale_fill_manual(values = c("blue", "darkblue", "red", "pink","black","yellow","brown")) + # pick the colours
+  guides(fill = "none") + # no need to show legend for colour 
+  theme_minimal() # pretty graphic theme
+```
+#Looking at topic
+```{r}
+# 统计每个主题的个数
+topic_counts <- data %>%
+  group_by(topic) %>%
+  summarise(count = n())
+
+# 打印结果
+print(topic_counts)
+
+```
+
+```{r}
+# to subset means to take only a sample according to a specific condition. Here I'm going to look only at tabloid media. 
+speech_topic <- data %>%
+  filter(topic %in% c("economy", "external relations", "fabric of society", "freedom and democracy","no topic","political system","social groups","welfare and quality of life"))
+
+# create corpus
+speech_topic_corpus <- corpus(speech_topic, text_field = "text")
+
+# check that all docvars have been correctly recognised
+names(docvars(speech_topic_corpus)) 
+
+# tokenising and tidying
+toks_topic <- tokens(speech_topic_corpus, 
+                       remove_punct = TRUE, # remove punctuation
+                       remove_url = TRUE, # remove urls
+                       remove_numbers = TRUE, # remove numbers
+                       remove_symbols = TRUE) %>% # remove symbols
+  tokens_select(pattern = stopwords("en"), selection = "remove") %>% # remove stopwords
+  tokens_tolower()
+```
+```{r}
+library(quanteda)
+
+# 检查预处理后的令牌是否存在
+if (any(lengths(toks_topic) == 0)) {
+  warning("Some tokenized documents are empty after preprocessing.")
+}
+
+# 创建DFM并检查每个政党的文档数
+dfm_topic <- dfm(toks_topic)
+cat("Document count by topic before grouping:\n")
+print(table(docvars(toks_topic, "topic")))
+
+# 按政党分组
+dfm_grouped_topic <- dfm_group(dfm_topic, groups = docvars(dfm_topic, "topic"))
+
+# 计算每个政党的总令牌数
+total_tokens_per_topic <- rowSums(dfm_grouped_topic)
+topic_names <- docvars(dfm_grouped_topic, "topic")
+
+# 结果整理为数据框
+total_topictokens_df <- data.frame(topic = topic_names, total_topictokens = total_tokens_per_topic)
+
+# 查看结果
+print(total_topictokens_df)
+```
+
+```{r}
+data_dictionary_NRC <- get_sentiments("nrc")
+data_dictionary_NRC <- as.dictionary(data_dictionary_NRC)
+
+toks_topic_nrc <- toks_topic %>%
+  tokens_lookup(dictionary = data_dictionary_NRC)
+
+# turn into document feature matrix (dfm)
+dfm_topic_nrc <- dfm(toks_topic_nrc) %>% 
+  dfm_group(groups = docvars(toks_topic_nrc, "topic")) %>%
+  convert(to = "data.frame") # convert to data frame
+
+print(dfm_topic_nrc)
+```
+
+```{r}
+dfm_topic_nrc <- dfm_topic_nrc %>%
+  rename(topic = doc_id)
+
+dfm_topic_nrc$total <- rowSums(dfm_topic_nrc[, -1], na.rm = TRUE)
+
+print(dfm_topic_nrc)
+```
+
+```{r}
+dfm_topic_nrc_pct <- dfm_topic_nrc %>%
+  mutate(across(c("anger":"trust"), ~round((.x/total)*100, digits=1)))
+
+dfm_topic_nrc_pct <- dfm_topic_nrc_pct %>%
+  select(-total) %>% # remove the 'total' column
+  pivot_longer(c(anger:trust), names_to = "sentiment", values_to = "frequency")
+```
+
+```{r}
+dfm_topic_nrc_pct %>%
+  ggplot() + 
+  geom_col(aes(x=topic, y=frequency, group=sentiment, fill=topic)) +
+  coord_flip() + # pivot plot by 90 degrees
+  facet_wrap(~sentiment, nrow = 2) + # create multiple plots for each
+  ylab("Sentiment relative frequency") + # label y axis
+  scale_fill_manual(values = c("blue", "darkblue", "red", "pink","black","yellow","brown","gray")) + # pick the colours
+  guides(fill = "none") + # no need to show legend for colour 
+  theme_minimal() # pretty graphic theme
+```
+#trust word in each topic change in year
+```{r}
+tidy_data$year <- format(tidy_data$time, "%Y")
+
+
+year_counts <- tidy_data %>% 
+  group_by(year) %>%
+  count(word, sort = TRUE)
+
+head(year_counts)
+```
+#analysis key words about trust
+```{r}
+year_counts$trustword <- as.integer(grepl("trust|truth|true|real|authority|confidence|faith|friend|hope|united|statement|agreement|credit|share|agreed" ,
+                                            x = year_counts$word))
+
+head(year_counts)
+```
+```{r}
+#get counts by year and word
+trustword_counts <- year_counts %>%
+  group_by(year) %>%
+  mutate(year_total = sum(n)) %>%
+  filter(trustword==1) %>%
+  summarise(sum_trust = sum(n),
+            year_total= min(year_total))
+head(trustword_counts)
+```
+```{r}
+ggplot(trustword_counts, aes(year, sum_trust / year_total, group=1)) +
+  geom_line() +
+  xlab("Year") +
+  ylab("% trust-related words") +
+  scale_y_continuous(labels = scales::percent_format(),
+                     expand = c(0, 0), limits = c(0, NA))
+```
+```{r}
+
+ggplot(trustword_counts, aes(year, sum_trust / year_total, group=1)) +
+  geom_line() +
+  geom_vline(xintercept = 2003, col="red")+
+  xlab("Year") +
+  ylab("% trust-related words") +
+  scale_y_continuous(labels = scales::percent_format(),
+                     expand = c(0, 0), limits = c(0, NA))
+```
+
+#group by topic
+```{r}
+
+topic_counts <- tidy_data %>% 
+  group_by(topic) %>%
+  count(word, sort = TRUE)
+
+head(topic_counts)
+
+topic_counts$trustword <- as.integer(grepl("trust|truth|true|real|authority|confidence|faith|friend|hope|united|statement|agreement|credit|share|agreed" ,
+                                            x = topic_counts$word))
+
+head(topic_counts)
+
+#get counts by topic and word
+topictrust_counts <- topic_counts %>%
+  group_by(topic) %>%
+  mutate(topic_total = sum(n)) %>%
+  filter(trustword==1) %>%
+  summarise(sum_trust = sum(n),
+            topic_total= min(topic_total))
+head(topictrust_counts)
+```
+```{r}
+ggplot(topictrust_counts, aes(topic, sum_trust / topic_total, group=1)) +
+  geom_point(aes(x=topic,y=sum_trust / topic_total)) +
+  xlab("Topic") +
+  ylab("% trust-related words") +
+  scale_y_continuous(labels = scales::percent_format(),
+                     expand = c(0, 0), limits = c(0, NA)) 
+```
+
+```{r}
+
+```
+
