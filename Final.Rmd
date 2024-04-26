@@ -212,11 +212,13 @@ value <- c(1, 1, 1, 1, 1, 1, 1,1,1,1,1,1,1,1,1)
 trust_word <- data.frame(word, value)
 trust_word
 ```
+I choose some trust related words to creat my own specific lexicons
+
 ```{r}
 tidy_data %>%
-  inner_join(trust_word) %>%
-  group_by(time, index = order) %>% 
-  summarise(morwords = sum(value)) %>% 
+  inner_join(trust_word) %>% #An inner join combines rows from two dataframes based on matching values in both dataframes
+  group_by(time, index = order) %>%  #Group the resulting data frames by the 'time' column and the new index created by the 'order' column.
+  summarise(morwords = sum(value)) %>% #In each group defined by the unique combination of 'time' and 'order', this row calculates the sum of the 'value' column and creates a new column calling this sum value "morwords". This operation reduces the data frame to a summary representation, where each group is represented by a single line
   ggplot(aes(time, morwords)) +
   geom_bar(stat= "identity") +
   ylab("trust words")
@@ -279,18 +281,18 @@ grid()
 abline(h = 0, lty = 2)
 ```
 ```{r}
-# 确定 time 列中的年份范围
+# Determine the year range in the time column
 year_range <- range(format(as.Date(dfmat_speech_lsd$time), "%Y"))
 years <- seq(from = as.numeric(year_range[1]), to = as.numeric(year_range[2]))
 
-# 绘制正面和负面情感的时间序列
+# Plot time series of positive and negative sentiment
 matplot(dfmat_speech_lsd$time, dfmat_speech_lsd, type = "l", lty = 1, col = 1:2,
-        ylab = "Frequency", xlab = "Year", xaxt = "n")  # 移除默认的 x 轴标签
+        ylab = "Frequency", xlab = "Year", xaxt = "n")  # Remove the default X-axis labels
 axis(1, at = as.Date(paste0(years, "-01-01")), labels = years)
 grid()
 legend("topleft", col = 1:2, legend = colnames(dfmat_speech_lsd), lty = 1, bg = "white")
 
-# 绘制总体情感 (positive - negative) 的时间序列
+# Plot the overall sentiment (positive-negative) time series
 plot(dfmat_speech_lsd$time, dfmat_speech_lsd[,"positive"] - dfmat_speech_lsd[,"negative"], 
      type = "l", ylab = "Sentiment", xlab = "Year", xaxt = "n")
 axis(1, at = as.Date(paste0(years, "-01-01")), labels = years)
@@ -324,27 +326,27 @@ toks_tabloid <- tokens(speech_tabloid_corpus,
 ```{r}
 library(quanteda)
 
-# 检查预处理后的令牌是否存在
+# check if preprocessed token exists
 if (any(lengths(toks_tabloid) == 0)) {
   warning("Some tokenized documents are empty after preprocessing.")
 }
 
-# 创建DFM并检查每个政党的文档数
+# check if preprocessed token exists
 dfm_tabloid <- dfm(toks_tabloid)
 cat("Document count by party before grouping:\n")
 print(table(docvars(toks_tabloid, "party")))
 
-# 按政党分组
+# group by party
 dfm_grouped <- dfm_group(dfm_tabloid, groups = docvars(dfm_tabloid, "party"))
 
-# 计算每个政党的总令牌数
+# Calculate the total number of tokens for each party
 total_tokens_per_party <- rowSums(dfm_grouped)
 party_names <- docvars(dfm_grouped, "party")
 
-# 结果整理为数据框
+# Results collated into data frames
 total_tokens_df <- data.frame(party = party_names, total_tokens = total_tokens_per_party)
 
-# 查看结果
+# print results
 print(total_tokens_df)
 ```
 ```{r}
@@ -393,12 +395,12 @@ dfm_tabloid_nrc_pct %>%
 ```
 #Looking at topic
 ```{r}
-# 统计每个主题的个数
+# Count the number of topics
 topic_counts <- data %>%
   group_by(topic) %>%
   summarise(count = n())
 
-# 打印结果
+# print results
 print(topic_counts)
 
 ```
@@ -426,27 +428,27 @@ toks_topic <- tokens(speech_topic_corpus,
 ```{r}
 library(quanteda)
 
-# 检查预处理后的令牌是否存在
+# check if preprocessed token exists
 if (any(lengths(toks_topic) == 0)) {
   warning("Some tokenized documents are empty after preprocessing.")
 }
 
-# 创建DFM并检查每个政党的文档数
+# Create DFM and check the number of documents for each topic
 dfm_topic <- dfm(toks_topic)
 cat("Document count by topic before grouping:\n")
 print(table(docvars(toks_topic, "topic")))
 
-# 按政党分组
+# group by topic
 dfm_grouped_topic <- dfm_group(dfm_topic, groups = docvars(dfm_topic, "topic"))
 
-# 计算每个政党的总令牌数
+# Calculate the total number of tokens for each topic
 total_tokens_per_topic <- rowSums(dfm_grouped_topic)
 topic_names <- docvars(dfm_grouped_topic, "topic")
 
-# 结果整理为数据框
+# Results collated into data frames
 total_topictokens_df <- data.frame(topic = topic_names, total_topictokens = total_tokens_per_topic)
 
-# 查看结果
+
 print(total_topictokens_df)
 ```
 
@@ -464,7 +466,7 @@ dfm_topic_nrc <- dfm(toks_topic_nrc) %>%
 
 print(dfm_topic_nrc)
 ```
-
+#Aggregating and Displaying Sentiment Counts by Topic
 ```{r}
 dfm_topic_nrc <- dfm_topic_nrc %>%
   rename(topic = doc_id)
@@ -476,7 +478,7 @@ print(dfm_topic_nrc)
 
 ```{r}
 dfm_topic_nrc_pct <- dfm_topic_nrc %>%
-  mutate(across(c("anger":"trust"), ~round((.x/total)*100, digits=1)))
+  mutate(across(c("anger":"trust"), ~round((.x/total)*100, digits=1))) #calculate %
 
 dfm_topic_nrc_pct <- dfm_topic_nrc_pct %>%
   select(-total) %>% # remove the 'total' column
